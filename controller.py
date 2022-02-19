@@ -126,7 +126,7 @@ class PID(Controller):
 		value = float(value)
 		if isinstance(value, float):
 			self.samples = value
-			print(f'samples: {self.samples}')
+			#print(f'samples: {self.samples}')
 		else:
 			print(f'INVALID INPUT: {value} not type float')
 		
@@ -139,7 +139,7 @@ class PID(Controller):
 		value = float(value)
 		if isinstance(value, float):
 			self.windup_val = value
-			print(f'windup_val: {self.windup_val}')
+			#print(f'windup_val: {self.windup_val}')
 		else:
 			print(f'INVALID INPUT: {value} not type float')
 		
@@ -152,7 +152,7 @@ class PID(Controller):
 		value = float(value)
 		if isinstance(value, float):
 			self.setpoint = value
-			print(f'setpoint: {self.setpoint}')
+			#print(f'setpoint: {self.setpoint}')
 		else:
 			print(f'INVALID INPUT: {value} not type float')
 		
@@ -175,7 +175,7 @@ class PID(Controller):
 		'''
 		if isinstance(in_reverse, bool):
 			self.in_reverse = in_reverse
-			print(f'in_reverse: {self.in_reverse}')
+			#print(f'in_reverse: {self.in_reverse}')
 		else:
 			print(f'INVALID INPUT: in_reverse {in_reverse} not type bool')
 	
