@@ -7,26 +7,22 @@ from dataclasses import dataclass, field
 class Indicator(ABC):
 	
 	@abstractmethod
-	def __post_init__(self):
-		pass
-	
-	@abstractmethod
-	def update(self, input:float()) -> float():
+	def update(self, process_value:float()) -> float():
 		pass
 		
 @dataclass
 class LevelSensor(Indicator):
 	
 	max_vol:float() = field(repr=False,default=10)
-	curr_vol:float() = field(repr=False,default=0)
 	percent:float() = field(default=0)
 	
 	def __post_init__(self):
-		self.percent = self.update()
+		self.percent = self.update(0)
 		
 	def __repr__(self):
 		return f'{self.__class__.__name__}({self.percent}%)'
 		
-	def update(self, inlet_rate:float(), outlet_rate:float()):
-		return ((inlet_rate + outlet_rate)/self.max_vol) * 100
+	def update(self, process_value:float()) -> float():
+		self.percent = (process_value / self.max_vol) * 100
+		return self.percent
 		

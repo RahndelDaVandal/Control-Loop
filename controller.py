@@ -21,7 +21,7 @@ class PID(Controller):
 	Kd:float()
 	#out_min:float()
 	#out_max:float()
-	in_auto:bool()
+	in_auto:bool() = field(default=False)
 	#in_reverse:bool()
 		
 	def __post_init__(self):
@@ -48,7 +48,7 @@ class PID(Controller):
 		self.setpoint = 0.0
 		self.error = 0.0
 		self.last_error = 0.0
-		self.windup_val = 20.0
+		self.windup_val = 100.0
 		self.output = 0.0
 			
 	def update(self, process_value:float()) -> float():

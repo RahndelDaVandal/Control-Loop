@@ -6,10 +6,21 @@ from indicator import Indicator
 from actuator import Actuator
 
 @dataclass
+class Data:
+	process_value:float() = field(default=0.0)
+	indicator_output:float() = field(default=0.0)
+	controller_output:float() = field(default=0.0)
+	actuator_output:float() = field(default=0.0)
+	
+
+@dataclass
 class ControlLoop:
 	controller: List[Controller] = field(default=None)
 	indicator: List[Controller] = field(default=None)
 	actuator: List[Actuator] = field(default=None)
+	
+	def __post_init__(self):
+		self.data = Data()
 	
 	def __repr__(self):
 		return(
@@ -37,5 +48,10 @@ class ControlLoop:
 		else:
 			self.actuator = Default()
 
-	def run(self):
-		pass
+	def run(self, process_value) -> Data():
+		#self.data.process_value = process_value
+		#self.data.indicator_output = self.indicator.update(process_value)
+		#self.data.controller_output = self.controller.update(self.data.indicator_output)
+		#self.data.actuator_output = self.actuator.update(self.data.controller_output)
+		
+		return self.data

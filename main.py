@@ -12,13 +12,15 @@ pid_config = {
 	'Kp' : 0.75,
 	'Ki' : 0.075,
 	'Kd' : 0.0075,
-	'in_auto' : True
 }
 
 CL.setController(controller.PID(**pid_config))
+CL.setActuator(actuator.CPump())
+CL.setIndicator(indicator.LevelSensor())
 
 print(CL)
 
-CL.controller.setSetpoint(85)
+test = CL.run(1.0)
 
-print(CL)
+print(type(test))
+print(test)
