@@ -6,18 +6,27 @@ from dataclasses import dataclass,field
 class Actuator(ABC):
 	
 	@abstractmethod
-	def update(self, input:float()) -> float():
-		pass
-		
-class CPump(Actuator):
-	max_out:float()
-	min_out:float()
-	max_mA:float()
-	min_mA:float()
-	output:float()
-	
 	def __post_init__(self):
 		pass
+	
+	@abstractmethod
+	def update(self, input:float()) -> float():
+		pass
+
+@dataclass		
+class CPump(Actuator):
+	max_out:float() = field(default=100, repr=False)
+	min_out:float() = field(default=0, repr=False)
+	max_mA:float() = field(default=20, repr=False)
+	min_mA:float() = field(default=4, repr=False)
+	input:float() = field(default=4, repr=False)
+	output:float() = field(default=0)
+	
+	def __post_init__(self):
+		self.update(self.input)
+			
+	def __repr__(self):
+		return f'{self.__class__.__name__}({self.output} bbls/min)'
 		
 	def update(self, input) -> float():
 		'''
@@ -28,4 +37,7 @@ class CPump(Actuator):
 		return: self.output bbl/min
 		
 		'''
+		output = self.max_out - self.min_out
+		output /= self.max_mA - self.min_mA
+		output *= self.input - self.min_mA
 		return self.output
