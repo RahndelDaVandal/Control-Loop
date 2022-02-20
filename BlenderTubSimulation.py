@@ -15,21 +15,16 @@ def plot() -> None:
 if __name__ == '__main__':
 	data = []
 	
-	pid_config = {
-		'Kp' : 0.1,
-		'Ki' : 0.0,
-		'Kd' : 0.0,
-	}
-	
 	CL = controlloop.ControlLoop()
 	
 	print(CL)
 	
-	CL.setController(controller.PID(**pid_config))
-	CL.controller.setSetpoint(85)
+	CL.setController(controller.PID())
+	CL.controller.gains = (0.75, 0.075, 0.0075)
+	CL.controller.setpoint = 85.0
 	CL.setActuator(actuator.CPump())
 	CL.setIndicator(indicator.LevelSensor())
-	CL.controller.setMode(True)
+	CL.controller.mode = 'Auto'
 	
 	print(CL)
 	

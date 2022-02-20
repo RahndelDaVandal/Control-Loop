@@ -1,4 +1,3 @@
-# controller.py
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -7,188 +6,213 @@ from dataclasses import dataclass, field
 class Controller(ABC):
 	
 	@abstractmethod
-	def __post_init__(self):
-		pass
-	
-	@abstractmethod
 	def update(self, input:float()) -> float():
 		pass
 
 @dataclass
 class PID(Controller):
-	Kp:float()
-	Ki:float()
-	Kd:float()
-	#out_min:float()
-	#out_max:float()
-	in_auto:bool() = field(default=False)
-	#in_reverse:bool()
-		
+	_Kp:float() = field(default = 0.0)
+	_Ki:float() = field(default = 0.0)
+	_Kd:float() = field(default = 0.0)
+	
 	def __post_init__(self):
-		self.samples = 1
-		self.curr_time = time.monotonic()
-		self.last_time = self.curr_time
-		self.output = 0.0
-		self.clear()
+		self.reset()
 		
 	def __repr__(self):
 		return (
 			f'{self.__class__.__name__}'
-			f'(Kp={self.Kp}, '
-			f'Ki={self.Ki}, '
-			f'Kd={self.Kd}, '
-			f'setpoint={self.setpoint}, '
-			f'samples={self.samples}, '
-			f'in_auto={self.in_auto})'
+			f'(Kp={self._Kp}, '
+			f'Ki={self._Ki}, '
+			f'Kd={self._Kd}, '
+			f'setpoint={self._setpoint}, '
+			f'samples={self._samples}, '
+			f'mode={self.mode}, '
+			f'direction={self.direction})'
 			)
-		
-	def clear(self):
-		self.P = 0.0
-		self.I = 0.0
-		self.D = 0.0
-		self.setpoint = 0.0
-		self.error = 0.0
-		self.last_error = 0.0
-		self.windup_val = 20.0
-		self.output = 0.0
-			
+	
+	def reset(self) -> None:
+		self._curr_time = time.monotonic()
+		self._last_time = self._curr_time
+		self._P = 0.0
+		self._I = 0.0
+		self._D = 0.0
+		self._setpoint = 0.0
+		self._output_max = 0.0
+		self._output_min = 0.0
+		self._error = 0.0
+		self._samples = 1.0
+		self._last_error = 0.0
+		self._windup_val = 20.0
+		self._output = 0.0
+		self._last_output = self._output
+		self._in_auto = False
+		self._in_reverse = False
+	
 	def update(self, process_value:float()) -> float():
 		'''
 		Update PID Output Value
 		
 		process_value:float()
 		'''
-		self.output = 0.0
+		self._output = 0.0
 		
-		self.curr_time = time.monotonic()
-		delta_time = self.curr_time - self.last_error
-		time_diff = self.curr_time - self.last_time
+		self._curr_time = time.monotonic()
+		delta_time = self._curr_time - self._last_time
 		
-		if self.in_auto:
-			if time_diff > self.samples:	
-				self.error = self.setpoint - process_value
-				delta_error = self.error - self.last_error
+		if self._in_auto:
+			if delta_time > self._samples:	
+				self._error = self._setpoint - process_value
+				delta_error = self._error - self._last_error
 					
-				if delta_time >= self.samples:
-					self.P = self.Kp * self.error
-					self.I += self.error - self.last_error
+				if delta_time >= self._samples:
+					self._P = self._Kp * self._error
+					self._I += self._error - self._last_error
 						
-					if self.I < -self.windup_val: self.I = -self.windup_val
-					elif self.I > self.windup_val: self.I = self.windup_val
+					if self._I < -self._windup_val: self._I = -self._windup_val
+					elif self._I > self._windup_val: self._I = self._windup_val
 						
-					self.D = 0.0
-					if delta_time > 0: self.D = delta_error / delta_time
+					self._D = 0.0
+					if delta_time > 0: self._D = delta_error / delta_time
 						
-					self.last_time = self.curr_time
-					self.last_error = self.error
+					self._last_time = self._curr_time
+					self._last_error = self._error
 						
-					self.output = self.P + (self.Ki * self.I) + (self.Kd * self.D)
+					output = self._P + (self._Ki * self._I) + (self._Kd * self._D)
 					
-					#if self.output > self.out_max: self.output = self.out_max
-					#if self.output < self.out_min: self.output = self.out_min
+					self._output = self._clamp_output(output)
 			
-			if self.output == None: 
+			if self._output == None: 
 					print('Output is None')
-					self.output = 0.0
+					self._output = 0.0
 					print(f'Output = {self.output}')
 											
-			return self.output
-			
-	def setGains(self, gains:list(tuple())) -> None:
-		'''
-		Sets PID Gains
-			
-		gains: list(tuple(str(), float()))
-						 i.e. [('Kp', 0.75)] or [('p', 0.75), ('Ki', 0.075)]
-		'''
-		for gain in gains:
-			if isinstance(gain[0], str):
-				gain_name = gain[0]
-					
-				if isinstance(gain[1], float):
-					value = gain[1]
-						
-					if gain_name.upper() in ['KP','P']:
-						self.Kp = value
-					elif gain_name.upper() in ['KI','I']:
-						self.Ki = value
-					elif gain_name.upper() in ['KD','D']:
-						self.Kd = value
-					else:
-						print(f'INVALID GAIN: "{gain_name}" ("Kp"/"p", "Ki"/"i", "Kd"/"d")')
-							
-				else:
-					print(f'INVALID GAIN VALUE: {gain[1]} must be type float')
-				
-			else:
-				print(f'gain_name {gain[0]} is not type str()')
-					
-		print(f'\nKp:{self.Kp} Ki:{self.Ki} Kd:{self.Kd}\n')
-	
-	def setSamples(self, value:float()) -> None:
-		'''
-		Sets Samples 
+			return self._output
 		
-		value:float()
-		'''
-		value = float(value)
-		if isinstance(value, float):
-			self.samples = value
-			#print(f'samples: {self.samples}')
-		else:
-			print(f'INVALID INPUT: {value} not type float')
+	@property
+	def gains(self) -> tuple():
+		return (self._Kp, self._Ki, self._Kd)
 		
-	def setWindup(self, value:float()):
-		'''
-		Sets windup_val to clamp "Integral Wind Up"
+	@gains.setter 
+	def gains(self, new_gain:tuple()) -> None:
+		if isinstance(new_gain, tuple):
+			if len(new_gain) == 3:
+				self._Kp, self._Ki, self._Kd = new_gain
+			else: print(f'INVALID INPUT: PID.gains must have a length of 3')
+		else: print(f'INVALID INPUT: PID.gains must be a tuple()')
 		
-		value:float()
-		'''
-		value = float(value)
-		if isinstance(value, float):
-			self.windup_val = value
-			#print(f'windup_val: {self.windup_val}')
-		else:
-			print(f'INVALID INPUT: {value} not type float')
+	@property
+	def samples(self) -> float():
+		return self._samples
 		
-	def setSetpoint(self, value:float()):
-		'''
-		Sets PID Setpoint
-		
-		value:float()
-		'''
-		value = float(value)
-		if isinstance(value, float):
-			self.setpoint = value
-			#print(f'setpoint: {self.setpoint}')
-		else:
-			print(f'INVALID INPUT: {value} not type float')
+	@samples.setter
+	def samples(self, new_samples:float()) -> None:
+		if isinstance(new_samples, float):
+			if new_samples > 0:
+				self._samples = new_samples
+			else: 
+				print(f'INVALID INPUT: PID.samples must be greater than 0')
+		else: 
+			print(f'INVALID INPUT: PID.gains must be a float()')
 	
 	@property
-	def auto(self):
-		return self.in_auto
-	
-	@auto.setter	
-	def auto(self, in_auto:bool()):
-		'''
-		Sets PID Mode
+	def setpoint(self) -> float():
+		return self._setpoint
 		
-		mode:bool() (Auto = True, Manual = False)
-		'''
-		if isinstance(in_auto, bool):
-			self.in_auto = in_auto
+	@samples.setter
+	def setpoint(self, new_setpoint:float()) -> None:
+		if isinstance(new_setpoint, float):
+			if new_setpoint < 0:
+				print('WARNING: Entered setpoint is negative!')
+				self._setpoint = new_setpoint
+			elif new_setpoint == 0:
+				print('WARNING: Entered setpoint is equal to 0.0!')
+				self._setpoint = new_setpoint
+			else:
+				self._setpoint = new_setpoint
 		else:
-			print(f'INVALID INPUT: in_auto {in_auto} not type bool')
-		
-	def setDirection(self, in_reverse:bool()):
-		'''
-		Sets PID Mode
-		
-		mode:bool() (Auto = True, Manual = False)
-		'''
-		if isinstance(in_reverse, bool):
-			self.in_reverse = in_reverse
-			#print(f'in_reverse: {self.in_reverse}')
+			print('INVALID INPUT: PID.setpoint must be a float')
+						
+	@property
+	def mode(self) -> str():
+		if self._in_auto:
+			return 'auto'
 		else:
-			print(f'INVALID INPUT: in_reverse {in_reverse} not type bool')
+			return 'manual'
+			
+	@mode.setter
+	def mode(self, new_mode:str()) -> None:
+		if isinstance(new_mode, str):
+			if new_mode.lower() in ['auto','automatic','a']:
+				self._in_auto = True
+			elif new_mode.lower() in ['manual', 'm']:
+				self._in_auto = False
+			else:
+				print(f'INVALID INPUT: Must enter ("auto","automatic","a") or ("manual","m")')
+		else:
+			print(f'INVALID INPUT: PID.mode must be a str()')
+			
+	@property
+	def direction(self) -> str():
+		if self._in_reverse:
+			return 'reverse'
+		else:
+			return 'direct'
+			
+	@direction.setter
+	def direction(self, new_direction:str()) -> None:
+		if isinstance(new_direction, str):
+			if new_direction.lower() in ['direct','d']:
+				self._in_reverse = False
+			elif new_direction.lower() in ['reverse', 'r']:
+				self._in_reverse = True
+			else:
+				print(f'INVALID INPUT: Must enter ("direct","d") or ("reverse","r")')
+		else:
+			print(f'INVALID INPUT: PID.direction must be a str()')
+			
+	@property
+	def windup_val(self) -> float():
+		return self._windup_val
+		
+	@windup_val.setter
+	def windup_val(self, new_val:float()) -> None:
+		if isinstance(new_val, float):
+			if new_val < 0:
+				print(
+					'WARNING: Entered windup_val is less than 0! '
+					'May cause controller to run different than expected!'
+					)
+			self._windup_val = new_val
+		else:
+			print('INVALID INPUT: PID.windup_val must be a float()')
+			
+	@property
+	def output_limits(self) -> tuple():
+		return (self._output_min, self._output_max)
+		
+	@output_limits.setter
+	def output_limits(self, new_limits:tuple()) -> None:
+		if isinstance(new_limits, tuple):
+			if len(new_limits) == 2:
+				if isinstance(new_limits[0], float) and isinstance(new_limits[1], float):
+					if new_limits[0] < new_limits[1]:
+						self._output_min, self._output_max = new_limits
+					elif new_limits[0] > new_limits[1]:
+						self._output_max, self._output_min = new_limits
+					else:
+						print(f'INVALID INPUT: Please enter limits (minimum, maximum)')
+				else: print('INVALID IMPUT: output minimum and maximum must be type float')
+			else: print('INVALID INPUT: PID.output_limits must be a tuple with a length of 2')
+		else: print('INVALID INPUT: PID.output_limits must be type tuple')
 	
+	def _clamp_output(self, output:float()):
+		if self._output_min:
+			if self._output_max:
+				if output < self._output_min:
+					return self._output_min
+				elif	output > self._output_max:
+					return self._output_max
+				else: return output
+			else: return output
+		else:return output
+		
