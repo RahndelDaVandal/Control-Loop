@@ -22,9 +22,15 @@ if __name__ == '__main__':
 	CL.setController(controller.PID())
 	CL.controller.gains = (0.75, 0.075, 0.0075)
 	CL.controller.setpoint = 85.0
-	CL.setActuator(actuator.CPump())
-	CL.setIndicator(indicator.LevelSensor())
+	print(CL.controller)
+	print(CL.controller.setpoint)
 	CL.controller.mode = 'Auto'
+	CL.controller.output_limits = (4.0,20.0)
+	CL.setIndicator(indicator.LevelSensor())
+	CL.max_volume = 10.0
+	CL.setActuator(actuator.CPump())
+	
+	
 	
 	print(CL)
 	
@@ -35,10 +41,15 @@ if __name__ == '__main__':
 		if input < 0: input = 0
 		output = CL.run(input)
 		data.append(output)
-		input += output.controller_output
+		input += output.actuator_output
 		time.sleep(1)
 		
-	print(data)
+	for i in data:
+		print(
+			f'SP:{CL.controller.setpoint}'
+			f'PV:{i.process_value:.2f}'
+			f'|LS:{i.indicator_output:.2f}'
+			f'|CO:{i.controller_output:.2f}'
+			f'|AO:{i.actuator_output:.2f}'
+			)
 	
-# Clamp controller output 
-# use @property and @property.setter

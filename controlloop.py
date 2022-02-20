@@ -51,7 +51,7 @@ class ControlLoop:
 	def run(self, process_value) -> Data():
 		indicator_output = self.indicator.update(process_value)
 		controller_output = self.controller.update(indicator_output)
-		actuator_output = self.actuator.update(indicator_output)
+		actuator_output = self.actuator.update(controller_output)
 		
 		self.data.process_value = process_value
 		self.data.indicator_output = indicator_output

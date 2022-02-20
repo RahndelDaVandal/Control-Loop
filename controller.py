@@ -131,6 +131,8 @@ class PID(Controller):
 				self._setpoint = new_setpoint
 		else:
 			print('INVALID INPUT: PID.setpoint must be a float')
+			
+		print(f'setpoint={new_setpoint}')
 						
 	@property
 	def mode(self) -> str():

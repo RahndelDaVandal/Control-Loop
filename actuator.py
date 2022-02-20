@@ -6,27 +6,20 @@ from dataclasses import dataclass,field
 class Actuator(ABC):
 	
 	@abstractmethod
-	def __post_init__(self):
-		pass
-	
-	@abstractmethod
 	def update(self, input:float()) -> float():
 		pass
 
 @dataclass		
 class CPump(Actuator):
-	max_out:float() = field(default=100, repr=False)
-	min_out:float() = field(default=0, repr=False)
-	max_mA:float() = field(default=20, repr=False)
-	min_mA:float() = field(default=4, repr=False)
-	input:float() = field(default=4, repr=False)
-	output:float() = field(default=0)
-	
-	def __post_init__(self):
-		self.update(self.input)
+	_output_min:float() = field(default=0.0, repr=False)
+	_output_max:float() = field(default=100.0, repr=False)
+	_input_min:float() = field(default=4, repr=False)
+	_input_max:float() = field(default=20, repr=False)
+	_input:float() = field(default=4, repr=False)
+	_output:float() = field(default=0)
 			
 	def __repr__(self):
-		return f'{self.__class__.__name__}({self.output} bbls/min)'
+		return f'{self.__class__.__name__}({self._output} bbls/min)'
 		
 	def update(self, input) -> float():
 		'''
@@ -37,7 +30,53 @@ class CPump(Actuator):
 		return: self.output bbl/min
 		
 		'''
-		output = self.max_out - self.min_out
-		output /= self.max_mA - self.min_mA
-		output *= self.input - self.min_mA
-		return self.output
+		output = self._output_max - self._output_min
+		output /= self._input_max - self._input_min
+		output *= input - self._input_max
+		self._output = output
+		return self._output
+		
+	@property
+	def output_limits(self) -> tuple():
+		return (self._output_min, self._output_max)
+		
+	@output_limits.setter
+	def output_limits(self, new_limits:tuple()) -> None:
+		if isinstance(new_limits, tuple):
+			if len(new_limits) == 2:
+				if isinstance(new_limits[0], float) and isinstance(new_limits[1], float):
+					if new_limits[0] < new_limits[1]:
+						self._output_min, self._output_max = new_limits
+					elif new_limits[0] > new_limits[1]:
+						self._output_max, self._output_min = new_limits
+					else: print('INVALID INPUT: Must enter a minimum value and a maximum value')
+				else: print('INVALID INPUT: Cpump.output_limits must be floats')
+			else: print('INVALID INPUT: Cpump.output_limits must be a tuple with a length of 2')
+		else: print('INVALID INPUT: Cpump.output_limits must be of type tuple')
+		
+	@property
+	def input_limits(self) -> tuple():
+		return (self._input_min, self._input_max)
+		
+	@input_limits.setter
+	def input_limits(self, new_limits:tuple()) -> None:
+		if isinstance(new_limits, tuple):
+			if len(new_limits) == 2:
+				if isinstance(new_limits[0], float) and isinstance(new_limits[1], float):
+					if new_limits[0] < new_limits[1]:
+						self._input_min, self._input_max = new_limits
+					elif new_limits[0] > new_limits[1]:
+						self._input_max, self._input_max = new_limits
+					else: print('INVALID INPUT: Must enter a minimum value and a maximum value')
+				else: print('INVALID INPUT: Cpump.input_limits must be floats')
+			else: print('INVALID INPUT: Cpump.input_limits must be a tuple with a length of 2')
+		else: print('INVALID INPUT: Cpump.input_limits must be of type tuple')
+		
+	@property
+	def output(self) -> float():
+		return self._output
+		
+	@property
+	def input(self) -> float():
+		return self._input
+		
