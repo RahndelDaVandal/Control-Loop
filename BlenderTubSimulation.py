@@ -20,12 +20,13 @@ if __name__ == '__main__':
 	print(CL)
 	
 	CL.setController(controller.PID())
-	CL.controller.gains = (0.75, 0.075, 0.0075)
+	CL.controller.gains = (0.5, 0.0, 0.0)
 	CL.controller.setpoint = 85.0
 	print(CL.controller)
-	print(CL.controller.setpoint)
+	print(f'CL.controller.setpoint = {CL.controller.setpoint}')
 	CL.controller.mode = 'Auto'
 	CL.controller.output_limits = (4.0,20.0)
+	print(f'CL.controller.output_limits = {CL.controller.output_limits}')
 	CL.setIndicator(indicator.LevelSensor())
 	CL.max_volume = 10.0
 	CL.setActuator(actuator.CPump())
@@ -34,10 +35,11 @@ if __name__ == '__main__':
 	
 	print(CL)
 	
-	input = 0.0
+	
 	
 	for i in range(10):
-		input -= 5 + random.uniform(-2,2)
+		input = CL.indicator.percent
+		input -= 5 + random.uniform(0,0)
 		if input < 0: input = 0
 		output = CL.run(input)
 		data.append(output)
@@ -46,10 +48,10 @@ if __name__ == '__main__':
 		
 	for i in data:
 		print(
-			f'SP:{CL.controller.setpoint}'
-			f'PV:{i.process_value:.2f}'
+			f'|SP:{CL.controller.setpoint}'
+			f'|PV:{i.process_value:.2f}'
 			f'|LS:{i.indicator_output:.2f}'
 			f'|CO:{i.controller_output:.2f}'
-			f'|AO:{i.actuator_output:.2f}'
+			f'|AO:{i.actuator_output:.2f}|'
 			)
 	

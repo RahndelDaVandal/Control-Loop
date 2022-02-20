@@ -54,7 +54,7 @@ class PID(Controller):
 		
 		process_value:float()
 		'''
-		self._output = 0.0
+		self._output = self._output_min
 		
 		self._curr_time = time.monotonic()
 		delta_time = self._curr_time - self._last_time
@@ -81,12 +81,12 @@ class PID(Controller):
 					
 					self._output = self._clamp_output(output)
 			
-			if self._output == None: 
-					print('Output is None')
-					self._output = 0.0
-					print(f'Output = {self.output}')
+		if self._output == None: 
+			print('Output is None')
+			self._output = self._output_min
+			print(f'Output = {self.output}')
 											
-			return self._output
+		return self._output
 		
 	@property
 	def gains(self) -> tuple():
@@ -118,7 +118,7 @@ class PID(Controller):
 	def setpoint(self) -> float():
 		return self._setpoint
 		
-	@samples.setter
+	@setpoint.setter
 	def setpoint(self, new_setpoint:float()) -> None:
 		if isinstance(new_setpoint, float):
 			if new_setpoint < 0:
@@ -208,13 +208,9 @@ class PID(Controller):
 		else: print('INVALID INPUT: PID.output_limits must be type tuple')
 	
 	def _clamp_output(self, output:float()):
-		if self._output_min:
-			if self._output_max:
-				if output < self._output_min:
-					return self._output_min
-				elif	output > self._output_max:
-					return self._output_max
-				else: return output
-			else: return output
-		else:return output
-		
+		if output > self._output_max:
+			return self._output_max
+		elif output < self._output_min:
+			return self._output_min
+		else:
+			return output

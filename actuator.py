@@ -30,9 +30,13 @@ class CPump(Actuator):
 		return: self.output bbl/min
 		
 		'''
-		output = self._output_max - self._output_min
-		output /= self._input_max - self._input_min
-		output *= input - self._input_max
+		o = (self._output_max - self._output_min)
+		i = (self._input_max - self._input_min)
+		
+		o_over_i = o / i
+		
+		output = o_over_i * (input - self._input_min)
+		
 		self._output = output
 		return self._output
 		
