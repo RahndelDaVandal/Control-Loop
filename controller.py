@@ -28,6 +28,7 @@ class PID(Controller):
 		self.samples = 1
 		self.curr_time = time.monotonic()
 		self.last_time = self.curr_time
+		self.output = 0.0
 		self.clear()
 		
 	def __repr__(self):
@@ -48,7 +49,7 @@ class PID(Controller):
 		self.setpoint = 0.0
 		self.error = 0.0
 		self.last_error = 0.0
-		self.windup_val = 100.0
+		self.windup_val = 20.0
 		self.output = 0.0
 			
 	def update(self, process_value:float()) -> float():
@@ -57,6 +58,8 @@ class PID(Controller):
 		
 		process_value:float()
 		'''
+		self.output = 0.0
+		
 		self.curr_time = time.monotonic()
 		delta_time = self.curr_time - self.last_error
 		time_diff = self.curr_time - self.last_time
@@ -83,8 +86,13 @@ class PID(Controller):
 					
 					#if self.output > self.out_max: self.output = self.out_max
 					#if self.output < self.out_min: self.output = self.out_min
-					
-					return self.output
+			
+			if self.output == None: 
+					print('Output is None')
+					self.output = 0.0
+					print(f'Output = {self.output}')
+											
+			return self.output
 			
 	def setGains(self, gains:list(tuple())) -> None:
 		'''
@@ -116,7 +124,7 @@ class PID(Controller):
 				print(f'gain_name {gain[0]} is not type str()')
 					
 		print(f'\nKp:{self.Kp} Ki:{self.Ki} Kd:{self.Kd}\n')
-				
+	
 	def setSamples(self, value:float()) -> None:
 		'''
 		Sets Samples 
@@ -155,8 +163,13 @@ class PID(Controller):
 			#print(f'setpoint: {self.setpoint}')
 		else:
 			print(f'INVALID INPUT: {value} not type float')
-		
-	def setMode(self, in_auto:bool()):
+	
+	@property
+	def auto(self):
+		return self.in_auto
+	
+	@auto.setter	
+	def auto(self, in_auto:bool()):
 		'''
 		Sets PID Mode
 		

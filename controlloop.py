@@ -49,9 +49,13 @@ class ControlLoop:
 			self.actuator = Default()
 
 	def run(self, process_value) -> Data():
-		#self.data.process_value = process_value
-		#self.data.indicator_output = self.indicator.update(process_value)
-		#self.data.controller_output = self.controller.update(self.data.indicator_output)
-		#self.data.actuator_output = self.actuator.update(self.data.controller_output)
+		indicator_output = self.indicator.update(process_value)
+		controller_output = self.controller.update(indicator_output)
+		actuator_output = self.actuator.update(indicator_output)
+		
+		self.data.process_value = process_value
+		self.data.indicator_output = indicator_output
+		self.data.controller_output = controller_output
+		self.data.actuator_output = actuator_output
 		
 		return self.data

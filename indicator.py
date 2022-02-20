@@ -12,9 +12,8 @@ class Indicator(ABC):
 		
 @dataclass
 class LevelSensor(Indicator):
-	
-	max_vol:float() = field(repr=False,default=10)
-	percent:float() = field(default=0)
+	max_vol:float() = field(repr=False, default=10.0)
+	percent:float() = field(default=0.0)
 	
 	def __post_init__(self):
 		self.percent = self.update(0)
@@ -23,6 +22,6 @@ class LevelSensor(Indicator):
 		return f'{self.__class__.__name__}({self.percent}%)'
 		
 	def update(self, process_value:float()) -> float():
-		self.percent = (process_value / self.max_vol) * 100
+		self.percent = ((process_value / self.max_vol) * 100.00)
 		return self.percent
 		

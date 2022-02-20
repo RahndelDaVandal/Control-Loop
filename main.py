@@ -15,6 +15,9 @@ pid_config = {
 }
 
 CL.setController(controller.PID(**pid_config))
+
+CL.controller.auto(True)
+
 CL.setActuator(actuator.CPump())
 CL.setIndicator(indicator.LevelSensor())
 
