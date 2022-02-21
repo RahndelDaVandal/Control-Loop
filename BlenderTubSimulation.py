@@ -38,7 +38,7 @@ if __name__ == '__main__':
 	
 	
 	for i in range(10):
-		input = CL.indicator.percent
+		input = CL.indicator.current_volume
 		input -= 5 + random.uniform(0,0)
 		if input < 0: input = 0
 		output = CL.run(input)
