@@ -6,11 +6,23 @@ import indicator
 import actuator
 import controlloop
 
-def simulate() -> list():
-	pass
+def simulate(CL:controlloop.ControlLoop()) -> list():
+	data = []
+	for i in range(5):
+		input_vol = CL.indicator.current_volume
+		input_percent = CL.indicator.percent
+		print(input_percent)
+		print(CL.indicator)
+		temp = CL.run(input_percent)
+		data.append(temp)
+		print(data[len(data)-1])
+		CL.indicator.update(input_vol + temp.actuator_output)
+		time.sleep(1)
+	
 	
 def plot() -> None:
 	pass
+
 
 if __name__ == '__main__':
 	data = []
@@ -20,7 +32,7 @@ if __name__ == '__main__':
 	print(CL)
 	
 	CL.setController(controller.PID())
-	CL.controller.gains = (0.5, 0.0, 0.0)
+	CL.controller.gains = (0.1, 0.0, 0.0)
 	CL.controller.setpoint = 85.0
 	print(CL.controller)
 	print(f'CL.controller.setpoint = {CL.controller.setpoint}')
@@ -35,8 +47,9 @@ if __name__ == '__main__':
 	
 	print(CL)
 	
+	simulate(CL)	
 	
-	
+"""	
 	for i in range(10):
 		input = CL.indicator.current_volume
 		input -= 5 + random.uniform(0,0)
@@ -54,4 +67,4 @@ if __name__ == '__main__':
 			f'|CO:{i.controller_output:.2f}'
 			f'|AO:{i.actuator_output:.2f}|'
 			)
-	
+"""

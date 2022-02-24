@@ -7,8 +7,10 @@ from actuator import Actuator
 
 @dataclass
 class Data:
+	time:list() = field(defaultfactory=[])
 	process_value:float() = field(default=0.0)
 	indicator_output:float() = field(default=0.0)
+	indicator_volume:float() = field(default=0.0)
 	controller_output:float() = field(default=0.0)
 	actuator_output:float() = field(default=0.0)
 	
@@ -51,6 +53,7 @@ class ControlLoop:
 	def run(self, process_value) -> Data():
 		print(f'\nprocess_value = {process_value}')
 		indicator_output = self.indicator.update(process_value)
+		indicator_volume = self.indicator.current_volume
 		print(f'indicator_output = {indicator_output}')
 		controller_output = self.controller.update(indicator_output)
 		print(f'controller_output = {controller_output}')
@@ -59,7 +62,18 @@ class ControlLoop:
 		
 		self.data.process_value = process_value
 		self.data.indicator_output = indicator_output
+		self.data.indicator_volume = indicator_volume
 		self.data.controller_output = controller_output
 		self.data.actuator_output = actuator_output
 		
 		return self.data
+		
+	def simulate(self, iter_num:int, pv_affect:float) -> Data():
+		output_data = []
+		
+		self.data.time
+		self.data.process_value
+		self.data.indicator_output
+		self.data.indicator_volume
+		self.data.controller_output
+		self.data.actuator_output

@@ -21,7 +21,7 @@ class LevelSensor(Indicator):
 		
 	def update(self, process_value:float()) -> float():
 		self._percent = (process_value / self._max_vol)
-		self._percent - self._percent * 100
+		self._percent = self._percent * 100
 		return self._percent
 		
 	@property
